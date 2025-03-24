@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { fetchVideo, fetchVideos } from '@/lib/api';
@@ -18,8 +17,7 @@ import {
   Link as LinkIcon,
   Facebook,
   Twitter,
-  Mail,
-  WhatsApp
+  Mail
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -76,7 +74,6 @@ const VideoPlayer = () => {
         setVideo(fetchedVideo);
         document.title = `${fetchedVideo.title} - YouTube Clone`;
         
-        // Fetch related videos
         const fetchedRelatedVideos = await fetchVideos();
         setRelatedVideos(fetchedRelatedVideos.slice(0, 10).filter(v => v.id !== videoId));
       } catch (error) {
@@ -88,7 +85,6 @@ const VideoPlayer = () => {
     };
 
     loadVideo();
-    // Reset state when navigating between videos
     setHasLiked(false);
     setHasDisliked(false);
     setIsSubscribed(false);
@@ -210,9 +206,6 @@ const VideoPlayer = () => {
         case 'twitter':
           shareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(videoUrl)}&text=${encodeURIComponent(video?.title || 'Check out this video')}`;
           break;
-        case 'whatsapp':
-          shareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(`${video?.title} ${videoUrl}`)}`;
-          break;
         case 'email':
           shareUrl = `mailto:?subject=${encodeURIComponent(video?.title || 'Check out this video')}&body=${encodeURIComponent(`I thought you might like this video: ${videoUrl}`)}`;
           break;
@@ -222,7 +215,6 @@ const VideoPlayer = () => {
         window.open(shareUrl, '_blank');
       }
     } else {
-      // Default share behavior
       if (navigator.share) {
         navigator.share({
           title: video?.title,
@@ -277,7 +269,6 @@ const VideoPlayer = () => {
     <div className="container mx-auto py-6 px-4 md:px-6 pb-12 animate-fade-in">
       <div className="flex flex-col lg:flex-row gap-6">
         <div className="lg:w-3/4 space-y-4">
-          {/* Video Player */}
           <div className="aspect-video bg-black w-full rounded-xl overflow-hidden shadow-lg">
             <img 
               src={video.thumbnail} 
@@ -286,10 +277,8 @@ const VideoPlayer = () => {
             />
           </div>
           
-          {/* Video Title */}
           <h1 className="text-xl md:text-2xl font-bold dark:text-white mt-2">{video.title}</h1>
           
-          {/* Video Info */}
           <div className="flex flex-col md:flex-row justify-between gap-4">
             <div className="flex items-center gap-3">
               <Link to={`/channel/${video.channelName}`}>
@@ -373,10 +362,6 @@ const VideoPlayer = () => {
                       <Twitter className="h-4 w-4" />
                       <span>Twitter</span>
                     </Button>
-                    <Button variant="ghost" size="sm" className="w-full justify-start gap-2" onClick={() => handleShare('whatsapp')}>
-                      <WhatsApp className="h-4 w-4" />
-                      <span>WhatsApp</span>
-                    </Button>
                     <Button variant="ghost" size="sm" className="w-full justify-start gap-2" onClick={() => handleShare('email')}>
                       <Mail className="h-4 w-4" />
                       <span>Email</span>
@@ -412,7 +397,6 @@ const VideoPlayer = () => {
             </div>
           </div>
           
-          {/* Video Description */}
           <div className="bg-gray-100 dark:bg-gray-800 rounded-xl p-4 mt-4">
             <div className="flex gap-2 text-sm text-gray-700 dark:text-gray-300 mb-2">
               <span>{formatViews(video.views)} views</span>
@@ -426,11 +410,9 @@ const VideoPlayer = () => {
             </p>
           </div>
           
-          {/* Comments Section */}
           <CommentSection videoId={videoId} />
         </div>
         
-        {/* Related Videos */}
         <div className="lg:w-1/4">
           <h3 className="text-lg font-medium mb-3 dark:text-white">Related videos</h3>
           <ScrollArea className="h-[calc(100vh-150px)]">
