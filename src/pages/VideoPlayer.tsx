@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { fetchVideo, fetchVideos } from '@/lib/api';
 import { VideoProps } from '@/components/home/VideoCard';
 import VideoCard from '@/components/home/VideoCard';
@@ -13,19 +13,33 @@ import {
   Bookmark, 
   MoreHorizontal,
   Bell,
-  MessageSquare
+  MessageSquare,
+  Copy,
+  Link as LinkIcon,
+  Facebook,
+  Twitter,
+  Mail,
+  WhatsApp
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { useToast } from '@/components/ui/use-toast';
+import CommentSection from '@/components/video/CommentSection';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 
 const formatViews = (views: number): string => {
   if (views >= 1000000) {
@@ -46,8 +60,11 @@ const VideoPlayer = () => {
   const [dislikeCount, setDislikeCount] = useState(Math.floor(Math.random() * 10000));
   const [hasLiked, setHasLiked] = useState(false);
   const [hasDisliked, setHasDisliked] = useState(false);
-  const [commentsCount] = useState(Math.floor(Math.random() * 5000));
+  const [hasSaved, setHasSaved] = useState(false);
+  const [subscriberCount] = useState(Math.floor(Math.random() * 10000000));
   const { isAuthenticated } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const loadVideo = async () => {
@@ -57,12 +74,14 @@ const VideoPlayer = () => {
       try {
         const fetchedVideo = await fetchVideo(videoId);
         setVideo(fetchedVideo);
+        document.title = `${fetchedVideo.title} - YouTube Clone`;
         
         // Fetch related videos
         const fetchedRelatedVideos = await fetchVideos();
-        setRelatedVideos(fetchedRelatedVideos.slice(0, 10));
+        setRelatedVideos(fetchedRelatedVideos.slice(0, 10).filter(v => v.id !== videoId));
       } catch (error) {
         console.error('Failed to fetch video:', error);
+        navigate('/not-found');
       } finally {
         setIsLoading(false);
       }
@@ -73,11 +92,18 @@ const VideoPlayer = () => {
     setHasLiked(false);
     setHasDisliked(false);
     setIsSubscribed(false);
-  }, [videoId]);
+    setHasSaved(false);
+    setLikeCount(Math.floor(Math.random() * 100000));
+    setDislikeCount(Math.floor(Math.random() * 10000));
+  }, [videoId, navigate]);
 
   const handleLike = () => {
     if (!isAuthenticated) {
-      alert('Please sign in to like videos');
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to like videos",
+        variant: "destructive"
+      });
       return;
     }
 
@@ -92,12 +118,21 @@ const VideoPlayer = () => {
         setDislikeCount(dislikeCount - 1);
         setHasDisliked(false);
       }
+      
+      toast({
+        title: "Liked",
+        description: "Video has been added to your liked videos"
+      });
     }
   };
 
   const handleDislike = () => {
     if (!isAuthenticated) {
-      alert('Please sign in to dislike videos');
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to dislike videos",
+        variant: "destructive"
+      });
       return;
     }
 
@@ -117,11 +152,90 @@ const VideoPlayer = () => {
 
   const handleSubscribe = () => {
     if (!isAuthenticated) {
-      alert('Please sign in to subscribe');
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to subscribe",
+        variant: "destructive"
+      });
       return;
     }
     
     setIsSubscribed(!isSubscribed);
+    
+    toast({
+      title: isSubscribed ? "Unsubscribed" : "Subscribed",
+      description: isSubscribed 
+        ? `Unsubscribed from ${video?.channelName}` 
+        : `Subscribed to ${video?.channelName}`
+    });
+  };
+
+  const handleSaveVideo = () => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to save videos",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setHasSaved(!hasSaved);
+    
+    toast({
+      title: hasSaved ? "Removed from saved videos" : "Added to saved videos",
+      description: hasSaved 
+        ? "Video has been removed from your saved videos" 
+        : "Video has been saved for later viewing"
+    });
+  };
+
+  const handleShare = (platform?: string) => {
+    const videoUrl = window.location.href;
+    
+    if (platform) {
+      let shareUrl = '';
+      
+      switch (platform) {
+        case 'copy':
+          navigator.clipboard.writeText(videoUrl);
+          toast({
+            title: "Link copied",
+            description: "Video URL has been copied to clipboard"
+          });
+          return;
+        case 'facebook':
+          shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(videoUrl)}`;
+          break;
+        case 'twitter':
+          shareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(videoUrl)}&text=${encodeURIComponent(video?.title || 'Check out this video')}`;
+          break;
+        case 'whatsapp':
+          shareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(`${video?.title} ${videoUrl}`)}`;
+          break;
+        case 'email':
+          shareUrl = `mailto:?subject=${encodeURIComponent(video?.title || 'Check out this video')}&body=${encodeURIComponent(`I thought you might like this video: ${videoUrl}`)}`;
+          break;
+      }
+      
+      if (shareUrl) {
+        window.open(shareUrl, '_blank');
+      }
+    } else {
+      // Default share behavior
+      if (navigator.share) {
+        navigator.share({
+          title: video?.title,
+          url: videoUrl
+        }).catch(console.error);
+      } else {
+        navigator.clipboard.writeText(videoUrl);
+        toast({
+          title: "Link copied",
+          description: "Video URL has been copied to clipboard"
+        });
+      }
+    }
   };
 
   if (isLoading || !video) {
@@ -192,7 +306,7 @@ const VideoPlayer = () => {
                   {video.channelName}
                 </Link>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {formatViews(Math.floor(Math.random() * 10000000))} subscribers
+                  {formatViews(subscriberCount)} subscribers
                 </p>
               </div>
               <Button
@@ -237,14 +351,48 @@ const VideoPlayer = () => {
                 </Button>
               </div>
               
-              <Button variant="ghost" size="sm" className="rounded-full px-4 gap-2">
-                <Share2 className="h-4 w-4" />
-                <span>Share</span>
-              </Button>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="ghost" size="sm" className="rounded-full px-4 gap-2">
+                    <Share2 className="h-4 w-4" />
+                    <span>Share</span>
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-56 p-3">
+                  <div className="space-y-1">
+                    <h4 className="text-sm font-medium mb-2">Share via</h4>
+                    <Button variant="ghost" size="sm" className="w-full justify-start gap-2" onClick={() => handleShare('copy')}>
+                      <Copy className="h-4 w-4" />
+                      <span>Copy link</span>
+                    </Button>
+                    <Button variant="ghost" size="sm" className="w-full justify-start gap-2" onClick={() => handleShare('facebook')}>
+                      <Facebook className="h-4 w-4" />
+                      <span>Facebook</span>
+                    </Button>
+                    <Button variant="ghost" size="sm" className="w-full justify-start gap-2" onClick={() => handleShare('twitter')}>
+                      <Twitter className="h-4 w-4" />
+                      <span>Twitter</span>
+                    </Button>
+                    <Button variant="ghost" size="sm" className="w-full justify-start gap-2" onClick={() => handleShare('whatsapp')}>
+                      <WhatsApp className="h-4 w-4" />
+                      <span>WhatsApp</span>
+                    </Button>
+                    <Button variant="ghost" size="sm" className="w-full justify-start gap-2" onClick={() => handleShare('email')}>
+                      <Mail className="h-4 w-4" />
+                      <span>Email</span>
+                    </Button>
+                  </div>
+                </PopoverContent>
+              </Popover>
               
-              <Button variant="ghost" size="sm" className="rounded-full px-4 gap-2">
-                <Bookmark className="h-4 w-4" />
-                <span>Save</span>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className={`rounded-full px-4 gap-2 ${hasSaved ? 'bg-gray-100 dark:bg-gray-800' : ''}`}
+                onClick={handleSaveVideo}
+              >
+                <Bookmark className={`h-4 w-4 ${hasSaved ? 'fill-current' : ''}`} />
+                <span>{hasSaved ? 'Saved' : 'Save'}</span>
               </Button>
               
               <DropdownMenu>
@@ -255,8 +403,10 @@ const VideoPlayer = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem>Report</DropdownMenuItem>
-                  <DropdownMenuItem>Clip</DropdownMenuItem>
                   <DropdownMenuItem>Add to playlist</DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>Don't recommend channel</DropdownMenuItem>
+                  <DropdownMenuItem>Not interested</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -277,76 +427,7 @@ const VideoPlayer = () => {
           </div>
           
           {/* Comments Section */}
-          <div className="mt-8">
-            <Tabs defaultValue="comments" className="w-full">
-              <TabsList className="w-full justify-start mb-4 bg-transparent">
-                <TabsTrigger value="comments" className="rounded-full data-[state=active]:bg-gray-100 dark:data-[state=active]:bg-gray-800">
-                  <div className="flex items-center gap-2">
-                    <MessageSquare className="h-4 w-4" />
-                    <span>{formatViews(commentsCount)} Comments</span>
-                  </div>
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent value="comments" className="mt-0">
-                {isAuthenticated ? (
-                  <div className="flex gap-3 mb-6">
-                    <div className="w-10 h-10 rounded-full bg-blue-500 flex-shrink-0 flex items-center justify-center">
-                      <span className="text-white font-medium text-sm">JD</span>
-                    </div>
-                    <div className="flex-1">
-                      <input 
-                        type="text" 
-                        placeholder="Add a comment..." 
-                        className="w-full border-b border-gray-300 dark:border-gray-700 bg-transparent py-2 focus:outline-none focus:border-gray-500 dark:focus:border-gray-500"
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  <div className="mb-6 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg text-center">
-                    <p className="dark:text-gray-300">Please sign in to comment on this video</p>
-                  </div>
-                )}
-                
-                {/* Mock Comments */}
-                <div className="space-y-6">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <div key={i} className="flex gap-3">
-                      <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
-                        <img 
-                          src={`https://i.pravatar.cc/150?img=${10 + i}`} 
-                          alt="User avatar"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-sm dark:text-white">User Name</span>
-                          <span className="text-xs text-gray-500 dark:text-gray-400">
-                            {formatDistanceToNow(new Date(Date.now() - i * 86400000), { addSuffix: true })}
-                          </span>
-                        </div>
-                        <p className="text-sm mt-1 dark:text-gray-200">
-                          This is a great video! I really enjoyed watching it. Keep up the good work!
-                        </p>
-                        <div className="flex items-center gap-2 mt-2">
-                          <Button variant="ghost" size="sm" className="h-7 px-2">
-                            <ThumbsUp className="h-3.5 w-3.5 mr-1" />
-                            <span className="text-xs">{Math.floor(Math.random() * 100)}</span>
-                          </Button>
-                          <Button variant="ghost" size="sm" className="h-7 px-2">
-                            <ThumbsDown className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs">
-                            Reply
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </TabsContent>
-            </Tabs>
-          </div>
+          <CommentSection videoId={videoId} />
         </div>
         
         {/* Related Videos */}

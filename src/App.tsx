@@ -16,6 +16,10 @@ import VideoPlayer from "./pages/VideoPlayer";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import NotFound from "./pages/NotFound";
+import ExplorePage from "./pages/ExplorePage";
+import ShortsPage from "./pages/ShortsPage";
+import SubscriptionsPage from "./pages/SubscriptionsPage";
+import CategoryPage from "./pages/CategoryPage";
 
 const queryClient = new QueryClient();
 
@@ -69,6 +73,22 @@ const AppLayout = () => {
             <Route path="/watch/:videoId" element={<VideoPlayer />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            
+            {/* New Routes */}
+            <Route path="/explore" element={<ExplorePage />} />
+            <Route path="/shorts" element={<ShortsPage />} />
+            <Route path="/subscriptions" element={<SubscriptionsPage />} />
+            <Route path="/history" element={<CategoryPage />} />
+            <Route path="/your-videos" element={<CategoryPage />} />
+            <Route path="/watch-later" element={<CategoryPage />} />
+            <Route path="/liked-videos" element={<CategoryPage />} />
+            <Route path="/trending" element={<CategoryPage />} />
+            <Route path="/music" element={<CategoryPage />} />
+            <Route path="/gaming" element={<CategoryPage />} />
+            <Route path="/news" element={<CategoryPage />} />
+            <Route path="/sports" element={<CategoryPage />} />
+            <Route path="/fashion" element={<CategoryPage />} />
+            
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
