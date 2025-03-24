@@ -1,11 +1,10 @@
-
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
   Home, 
   Compass, 
   PlaySquare, 
-  ClockRewind, 
+  Clock, 
   ThumbsUp, 
   History, 
   UserRound, 
@@ -35,7 +34,7 @@ const navItems = [
 const libraryItems = [
   { name: 'History', icon: History, path: '/history' },
   { name: 'Your Videos', icon: Film, path: '/your-videos' },
-  { name: 'Watch Later', icon: ClockRewind, path: '/watch-later' },
+  { name: 'Watch Later', icon: Clock, path: '/watch-later' },
   { name: 'Liked Videos', icon: ThumbsUp, path: '/liked-videos' },
 ];
 
