@@ -1,25 +1,31 @@
 
-import React from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { fetchVideos } from '@/lib/api';
-import { useEffect, useState } from 'react';
-import VideoCard, { VideoProps } from '@/components/home/VideoCard';
-import { Skeleton } from '@/components/ui/skeleton';
+import { VideoProps } from '@/components/home/VideoCard';
+import VideoCard from '@/components/home/VideoCard';
+import { Loader2 } from 'lucide-react';
 
-const CategoryPage = () => {
-  const { category } = useParams<{ category: string }>();
+const CategoryPage: React.FC = () => {
+  const location = useLocation();
   const [videos, setVideos] = useState<VideoProps[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
-  const categoryTitle = category ? 
-    category.charAt(0).toUpperCase() + category.slice(1) : 
-    'Category';
+  // Extract category from pathname
+  const category = location.pathname.substring(1); // Remove the leading '/'
+  
+  // Get a user-friendly category name
+  const getCategoryName = (): string => {
+    // Convert kebab-case to title case (e.g., "watch-later" to "Watch Later")
+    const parts = category.split('-');
+    const titleCaseParts = parts.map(part => part.charAt(0).toUpperCase() + part.slice(1));
+    return titleCaseParts.join(' ');
+  };
 
   useEffect(() => {
     const loadVideos = async () => {
-      if (!category) return;
-      
       setIsLoading(true);
+      
       try {
         const fetchedVideos = await fetchVideos(category);
         setVideos(fetchedVideos);
@@ -29,35 +35,38 @@ const CategoryPage = () => {
         setIsLoading(false);
       }
     };
-
+    
     loadVideos();
   }, [category]);
 
   return (
-    <div className="container mx-auto py-6 px-4 md:px-6">
-      <h1 className="text-2xl font-bold mb-6 dark:text-white">{categoryTitle}</h1>
+    <div className="container mx-auto py-8 px-4 animate-fade-in">
+      <h1 className="text-2xl font-bold mb-6 dark:text-white">{getCategoryName()}</h1>
       
       {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {Array.from({ length: 12 }).map((_, i) => (
-            <div key={i} className="space-y-3">
-              <Skeleton className="h-36 w-full rounded-xl" />
-              <div className="flex gap-3">
-                <Skeleton className="h-10 w-10 rounded-full" />
-                <div className="space-y-2 flex-1">
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-3 w-3/4" />
-                  <Skeleton className="h-3 w-1/2" />
-                </div>
-              </div>
-            </div>
-          ))}
+        <div className="flex justify-center items-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-youtube-red" />
         </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      ) : videos.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {videos.map((video) => (
             <VideoCard key={video.id} {...video} />
           ))}
+        </div>
+      ) : (
+        <div className="text-center py-12">
+          <p className="text-lg text-gray-600 dark:text-gray-400">
+            No videos found in {getCategoryName()}
+          </p>
+          {(category === 'history' || category === 'watch-later' || category === 'liked-videos') && (
+            <p className="mt-2 text-sm text-gray-500 dark:text-gray-500">
+              Videos will appear here when you {
+                category === 'history' ? 'watch them' 
+                : category === 'watch-later' ? 'save them for later' 
+                : 'like them'
+              }
+            </p>
+          )}
         </div>
       )}
     </div>

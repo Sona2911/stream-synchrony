@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Menu, Search, Bell, User, LogOut, Settings, Moon, Sun } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Menu, Bell, User, LogOut, Settings, Moon, Sun } from 'lucide-react';
 import SearchBar from '../ui/SearchBar';
 import { Button } from '@/components/ui/button';
 import {
@@ -15,6 +15,7 @@ import {
 import ProfileEditor from '../profile/ProfileEditor';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/components/ui/use-toast';
 
 type NavbarProps = {
   toggleSidebar: () => void;
@@ -32,6 +33,8 @@ const Navbar: React.FC<NavbarProps> = ({
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isProfileEditorOpen, setIsProfileEditorOpen] = useState(false);
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode);
@@ -46,9 +49,30 @@ const Navbar: React.FC<NavbarProps> = ({
     setIsProfileEditorOpen(false);
   };
 
+  const handleSettingsClick = () => {
+    navigate('/settings');
+  };
+
   const getUserInitials = () => {
     if (!user || !user.username) return 'U';
     return user.username.slice(0, 2).toUpperCase();
+  };
+
+  const handleNotificationsClick = () => {
+    if (!isLoggedIn) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to view notifications",
+        variant: "default"
+      });
+      return;
+    }
+    
+    toast({
+      title: "No new notifications",
+      description: "You're all caught up!",
+      variant: "default"
+    });
   };
 
   return (
@@ -97,6 +121,7 @@ const Navbar: React.FC<NavbarProps> = ({
             size="icon"
             className="rounded-full"
             aria-label="Notifications"
+            onClick={handleNotificationsClick}
           >
             <Bell className="h-5 w-5 text-gray-700 dark:text-gray-200" />
           </Button>
@@ -129,7 +154,7 @@ const Navbar: React.FC<NavbarProps> = ({
                   <User className="mr-2 h-4 w-4" />
                   <span>Edit Profile</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer">
+                <DropdownMenuItem onClick={handleSettingsClick} className="cursor-pointer">
                   <Settings className="mr-2 h-4 w-4" />
                   <span>Settings</span>
                 </DropdownMenuItem>

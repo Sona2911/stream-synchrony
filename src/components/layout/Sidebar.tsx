@@ -14,7 +14,8 @@ import {
   Newspaper, 
   Trophy, 
   Shirt,
-  Settings 
+  Settings,
+  Utensils 
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -42,6 +43,7 @@ const exploreItems = [
   { name: 'News', icon: Newspaper, path: '/news' },
   { name: 'Sports', icon: Trophy, path: '/sports' },
   { name: 'Fashion', icon: Shirt, path: '/fashion' },
+  { name: 'Cooking', icon: Utensils, path: '/cooking' },
 ];
 
 const Sidebar: React.FC<SidebarProps> = ({ isExpanded, isLoggedIn }) => {
@@ -90,7 +92,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, isLoggedIn }) => {
     );
   };
 
-  // Add Settings option
+  // Settings option
   const settingsItem = { name: 'Settings', icon: Settings, path: '/settings' };
 
   return (

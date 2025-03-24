@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { fetchVideo, fetchVideos } from '@/lib/api';
+import { fetchVideo, fetchVideos, addToHistory } from '@/lib/api';
 import { VideoProps } from '@/components/home/VideoCard';
 import VideoCard from '@/components/home/VideoCard';
 import { useAuth } from '@/context/AuthContext';
@@ -81,6 +81,11 @@ const VideoPlayer = () => {
         
         const fetchedRelatedVideos = await fetchVideos();
         setRelatedVideos(fetchedRelatedVideos.slice(0, 10).filter(v => v.id !== videoId));
+        
+        // Add to history if user is authenticated
+        if (isAuthenticated && user) {
+          addToHistory(fetchedVideo);
+        }
       } catch (error) {
         console.error('Failed to fetch video:', error);
         navigate('/not-found');
@@ -96,7 +101,7 @@ const VideoPlayer = () => {
     setHasSaved(false);
     setLikeCount(Math.floor(Math.random() * 100000));
     setDislikeCount(Math.floor(Math.random() * 10000));
-  }, [videoId, navigate]);
+  }, [videoId, navigate, isAuthenticated, user]);
 
   const handlePlayPause = () => {
     if (videoRef.current) {
@@ -225,12 +230,26 @@ const VideoPlayer = () => {
     
     setHasSaved(!hasSaved);
     
+    // Add to watch later if saving
+    if (!hasSaved && video) {
+      addToWatchLater(video);
+    }
+    
     toast({
       title: hasSaved ? "Removed from saved videos" : "Added to saved videos",
       description: hasSaved 
         ? "Video has been removed from your saved videos" 
         : "Video has been saved for later viewing"
     });
+  };
+
+  const addToWatchLater = (video: VideoProps) => {
+    // Call the API function to add the video to watch later
+    const watchLaterVideos = JSON.parse(localStorage.getItem('watchLater') || '[]');
+    if (!watchLaterVideos.some((v: VideoProps) => v.id === video.id)) {
+      watchLaterVideos.push(video);
+      localStorage.setItem('watchLater', JSON.stringify(watchLaterVideos));
+    }
   };
 
   const handleShare = (platform?: string) => {
@@ -312,8 +331,22 @@ const VideoPlayer = () => {
     );
   }
 
-  // Generate a video URL based on the video ID to simulate playback
-  const videoUrl = `https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4`;
+  // Video URLs for different resolutions
+  const videoSources = [
+    { src: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", type: "video/mp4" },
+    { src: "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4", type: "video/mp4" },
+    { src: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", type: "video/mp4" },
+    { src: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4", type: "video/mp4" },
+    { src: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4", type: "video/mp4" },
+    { src: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4", type: "video/mp4" },
+    { src: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4", type: "video/mp4" },
+    { src: "https://storage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4", type: "video/mp4" },
+    { src: "https://storage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4", type: "video/mp4" },
+    { src: "https://storage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4", type: "video/mp4" },
+  ];
+
+  // Choose a video source based on the videoId to simulate different videos
+  const videoUrl = videoSources[parseInt(videoId.replace('video-', '')) % videoSources.length].src;
 
   return (
     <div className="container mx-auto py-6 px-4 md:px-6 pb-12 animate-fade-in">
@@ -326,6 +359,7 @@ const VideoPlayer = () => {
               poster={video.thumbnail}
               className="w-full h-full object-contain"
               controls
+              autoPlay
               onClick={handlePlayPause}
             />
           </div>

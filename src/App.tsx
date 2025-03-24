@@ -17,6 +17,8 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import NotFound from "./pages/NotFound";
 import CategoryPage from "./pages/CategoryPage";
+import SearchResultsPage from "./pages/SearchResultsPage";
+import SettingsPage from "./pages/SettingsPage";
 
 const queryClient = new QueryClient();
 
@@ -70,8 +72,10 @@ const AppLayout = () => {
             <Route path="/watch/:videoId" element={<VideoPlayer />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/search" element={<SearchResultsPage />} />
             
-            {/* Simplified Routes */}
+            {/* Category Routes */}
             <Route path="/history" element={<CategoryPage />} />
             <Route path="/your-videos" element={<CategoryPage />} />
             <Route path="/watch-later" element={<CategoryPage />} />
@@ -82,6 +86,7 @@ const AppLayout = () => {
             <Route path="/news" element={<CategoryPage />} />
             <Route path="/sports" element={<CategoryPage />} />
             <Route path="/fashion" element={<CategoryPage />} />
+            <Route path="/cooking" element={<CategoryPage />} />
             
             <Route path="*" element={<NotFound />} />
           </Routes>
