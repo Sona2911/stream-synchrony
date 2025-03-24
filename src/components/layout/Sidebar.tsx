@@ -1,9 +1,8 @@
+
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
   Home, 
-  Compass, 
-  PlaySquare, 
   Clock, 
   ThumbsUp, 
   History, 
@@ -14,7 +13,8 @@ import {
   Gamepad2, 
   Newspaper, 
   Trophy, 
-  Shirt 
+  Shirt,
+  Settings 
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -26,9 +26,6 @@ type SidebarProps = {
 
 const navItems = [
   { name: 'Home', icon: Home, path: '/' },
-  { name: 'Explore', icon: Compass, path: '/explore' },
-  { name: 'Shorts', icon: PlaySquare, path: '/shorts' },
-  { name: 'Subscriptions', icon: UserRound, path: '/subscriptions' },
 ];
 
 const libraryItems = [
@@ -93,6 +90,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, isLoggedIn }) => {
     );
   };
 
+  // Add Settings option
+  const settingsItem = { name: 'Settings', icon: Settings, path: '/settings' };
+
   return (
     <aside
       className={cn(
@@ -105,6 +105,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, isLoggedIn }) => {
           {renderSection('', navItems)}
           {renderSection('Library', libraryItems, true)}
           {renderSection('Explore', exploreItems)}
+          
+          {isLoggedIn && renderSection('Settings', [settingsItem])}
           
           {!isLoggedIn && isExpanded && (
             <div className="px-4 py-4 mt-2 border-t border-gray-200 dark:border-gray-800">

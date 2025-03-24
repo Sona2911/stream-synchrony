@@ -16,9 +16,6 @@ import VideoPlayer from "./pages/VideoPlayer";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import NotFound from "./pages/NotFound";
-import ExplorePage from "./pages/ExplorePage";
-import ShortsPage from "./pages/ShortsPage";
-import SubscriptionsPage from "./pages/SubscriptionsPage";
 import CategoryPage from "./pages/CategoryPage";
 
 const queryClient = new QueryClient();
@@ -74,10 +71,7 @@ const AppLayout = () => {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             
-            {/* New Routes */}
-            <Route path="/explore" element={<ExplorePage />} />
-            <Route path="/shorts" element={<ShortsPage />} />
-            <Route path="/subscriptions" element={<SubscriptionsPage />} />
+            {/* Simplified Routes */}
             <Route path="/history" element={<CategoryPage />} />
             <Route path="/your-videos" element={<CategoryPage />} />
             <Route path="/watch-later" element={<CategoryPage />} />

@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { fetchVideo, fetchVideos } from '@/lib/api';
 import { VideoProps } from '@/components/home/VideoCard';
@@ -17,7 +18,9 @@ import {
   Link as LinkIcon,
   Facebook,
   Twitter,
-  Mail
+  Mail,
+  UserCircle,
+  Settings
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -60,9 +63,11 @@ const VideoPlayer = () => {
   const [hasDisliked, setHasDisliked] = useState(false);
   const [hasSaved, setHasSaved] = useState(false);
   const [subscriberCount] = useState(Math.floor(Math.random() * 10000000));
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
     const loadVideo = async () => {
@@ -92,6 +97,48 @@ const VideoPlayer = () => {
     setLikeCount(Math.floor(Math.random() * 100000));
     setDislikeCount(Math.floor(Math.random() * 10000));
   }, [videoId, navigate]);
+
+  const handlePlayPause = () => {
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause();
+      } else {
+        videoRef.current.play().catch(error => {
+          console.error("Video play error:", error);
+          toast({
+            title: "Video Error",
+            description: "There was an error playing this video.",
+            variant: "destructive"
+          });
+        });
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  useEffect(() => {
+    const handleVideoEvents = () => {
+      const video = videoRef.current;
+      if (!video) return;
+
+      const handlePlay = () => setIsPlaying(true);
+      const handlePause = () => setIsPlaying(false);
+      const handleEnded = () => setIsPlaying(false);
+
+      video.addEventListener('play', handlePlay);
+      video.addEventListener('pause', handlePause);
+      video.addEventListener('ended', handleEnded);
+
+      return () => {
+        video.removeEventListener('play', handlePlay);
+        video.removeEventListener('pause', handlePause);
+        video.removeEventListener('ended', handleEnded);
+      };
+    };
+
+    const cleanup = handleVideoEvents();
+    return cleanup;
+  }, [videoRef]);
 
   const handleLike = () => {
     if (!isAuthenticated) {
@@ -265,15 +312,21 @@ const VideoPlayer = () => {
     );
   }
 
+  // Generate a video URL based on the video ID to simulate playback
+  const videoUrl = `https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4`;
+
   return (
     <div className="container mx-auto py-6 px-4 md:px-6 pb-12 animate-fade-in">
       <div className="flex flex-col lg:flex-row gap-6">
         <div className="lg:w-3/4 space-y-4">
-          <div className="aspect-video bg-black w-full rounded-xl overflow-hidden shadow-lg">
-            <img 
-              src={video.thumbnail} 
-              alt={video.title}
-              className="w-full h-full object-cover"
+          <div className="aspect-video bg-black w-full rounded-xl overflow-hidden shadow-lg relative">
+            <video
+              ref={videoRef}
+              src={videoUrl}
+              poster={video.thumbnail}
+              className="w-full h-full object-contain"
+              controls
+              onClick={handlePlayPause}
             />
           </div>
           

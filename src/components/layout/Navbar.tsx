@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, Search, Bell, User, LogOut, Upload, Settings, Moon, Sun } from 'lucide-react';
+import { Menu, Search, Bell, User, LogOut, Settings, Moon, Sun } from 'lucide-react';
 import SearchBar from '../ui/SearchBar';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,6 +12,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import ProfileEditor from '../profile/ProfileEditor';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useAuth } from '@/context/AuthContext';
 
 type NavbarProps = {
   toggleSidebar: () => void;
@@ -27,10 +30,25 @@ const Navbar: React.FC<NavbarProps> = ({
   onLogout,
 }) => {
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isProfileEditorOpen, setIsProfileEditorOpen] = useState(false);
+  const { user } = useAuth();
 
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode);
     document.documentElement.classList.toggle('dark');
+  };
+
+  const openProfileEditor = () => {
+    setIsProfileEditorOpen(true);
+  };
+
+  const closeProfileEditor = () => {
+    setIsProfileEditorOpen(false);
+  };
+
+  const getUserInitials = () => {
+    if (!user || !user.username) return 'U';
+    return user.username.slice(0, 2).toUpperCase();
   };
 
   return (
@@ -91,21 +109,25 @@ const Navbar: React.FC<NavbarProps> = ({
                   size="icon"
                   className="rounded-full overflow-hidden"
                 >
-                  <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center">
-                    <span className="text-white font-medium text-sm">JD</span>
-                  </div>
+                  <Avatar className="w-8 h-8">
+                    <AvatarImage src={user?.avatarUrl} alt={user?.username} />
+                    <AvatarFallback className="bg-blue-500 text-white text-sm font-medium">
+                      {getUserInitials()}
+                    </AvatarFallback>
+                  </Avatar>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 animate-scale-in">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuLabel>
+                  <div className="flex flex-col">
+                    <span>{user?.username}</span>
+                    <span className="text-xs text-gray-500">{user?.email}</span>
+                  </div>
+                </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="cursor-pointer">
+                <DropdownMenuItem onClick={openProfileEditor} className="cursor-pointer">
                   <User className="mr-2 h-4 w-4" />
-                  <span>Profile</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer">
-                  <Upload className="mr-2 h-4 w-4" />
-                  <span>Upload Video</span>
+                  <span>Edit Profile</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem className="cursor-pointer">
                   <Settings className="mr-2 h-4 w-4" />
@@ -130,6 +152,10 @@ const Navbar: React.FC<NavbarProps> = ({
           )}
         </div>
       </div>
+      
+      {isProfileEditorOpen && (
+        <ProfileEditor isOpen={isProfileEditorOpen} onClose={closeProfileEditor} />
+      )}
     </header>
   );
 };
