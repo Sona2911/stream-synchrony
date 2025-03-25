@@ -4,6 +4,7 @@ import { Search, Mic } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useNavigate } from 'react-router-dom';
+import OpenInNewTab from './OpenInNewTab';
 
 const SearchBar: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -52,6 +53,7 @@ const SearchBar: React.FC = () => {
       >
         <Mic className="h-5 w-5 text-gray-700 dark:text-gray-300" />
       </Button>
+      <OpenInNewTab />
     </div>
   );
 };

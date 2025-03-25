@@ -5,6 +5,7 @@ import { searchVideos } from '@/lib/api';
 import { VideoProps } from '@/components/home/VideoCard';
 import VideoCard from '@/components/home/VideoCard';
 import { Loader2 } from 'lucide-react';
+import OpenInNewTab from '@/components/ui/OpenInNewTab';
 
 const SearchResultsPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -35,9 +36,12 @@ const SearchResultsPage: React.FC = () => {
 
   return (
     <div className="container mx-auto py-8 px-4 animate-fade-in">
-      <h1 className="text-2xl font-bold mb-6 dark:text-white">
-        Search results for: <span className="text-youtube-red">{query}</span>
-      </h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold dark:text-white">
+          Search results for: <span className="text-youtube-red">{query}</span>
+        </h1>
+        <OpenInNewTab />
+      </div>
 
       {isLoading ? (
         <div className="flex justify-center items-center h-64">
