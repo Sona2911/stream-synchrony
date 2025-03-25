@@ -14,11 +14,24 @@ if (!container) {
 
 const root = createRoot(container);
 
-// Add global error handler for script loading issues
+// Add comprehensive error handling for resource loading issues
 window.addEventListener('error', (event) => {
-  if (event.target && (event.target as HTMLElement).tagName === 'SCRIPT') {
-    console.error('Script loading error:', event);
+  console.error('Resource loading error:', event);
+  
+  if (event.target && 'tagName' in event.target) {
+    const element = event.target as HTMLElement;
+    console.error(`Failed to load ${element.tagName} resource:`, {
+      src: (element as any).src || 'unknown',
+      href: (element as any).href || 'unknown',
+      id: element.id || 'no-id',
+      className: element.className || 'no-class'
+    });
   }
+}, true); // Capture phase to catch all errors
+
+// Also monitor for unhandled promise rejections
+window.addEventListener('unhandledrejection', (event) => {
+  console.error('Unhandled Promise Rejection:', event.reason);
 });
 
 // Wrap in try-catch to handle rendering errors
