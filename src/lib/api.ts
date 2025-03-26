@@ -333,6 +333,34 @@ export const getYourVideos = (): VideoProps[] => {
   }));
 };
 
+// Add to liked videos
+export const addToLikedVideos = (video: VideoProps): void => {
+  const likedVideos = JSON.parse(localStorage.getItem('likedVideos') || '[]');
+  
+  // Check if video is already in liked videos
+  const existingIndex = likedVideos.findIndex((v: VideoProps) => v.id === video.id);
+  
+  if (existingIndex < 0) {
+    // If not already liked, add it to liked videos
+    likedVideos.push({
+      ...video,
+      likedAt: new Date().toISOString()
+    });
+    
+    localStorage.setItem('likedVideos', JSON.stringify(likedVideos));
+  }
+};
+
+// Remove from liked videos
+export const removeFromLikedVideos = (videoId: string): void => {
+  const likedVideos = JSON.parse(localStorage.getItem('likedVideos') || '[]');
+  
+  // Remove video from liked videos
+  const filteredVideos = likedVideos.filter((v: VideoProps) => v.id !== videoId);
+  
+  localStorage.setItem('likedVideos', JSON.stringify(filteredVideos));
+};
+
 // Get liked videos
 export const getLikedVideos = (): VideoProps[] => {
   return JSON.parse(localStorage.getItem('likedVideos') || '[]');

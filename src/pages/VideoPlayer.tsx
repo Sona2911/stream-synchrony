@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { fetchVideo, fetchVideos, addToHistory } from '@/lib/api';
+import { fetchVideo, fetchVideos, addToHistory, addToLikedVideos, removeFromLikedVideos, getLikedVideos } from '@/lib/api';
 import { VideoProps } from '@/components/home/VideoCard';
 import VideoCard from '@/components/home/VideoCard';
 import { useAuth } from '@/context/AuthContext';
@@ -86,6 +85,11 @@ const VideoPlayer = () => {
         if (isAuthenticated && user) {
           addToHistory(fetchedVideo);
         }
+        
+        // Check if video is liked
+        const likedVideos = getLikedVideos();
+        const isVideoLiked = likedVideos.some(v => v.id === videoId);
+        setHasLiked(isVideoLiked);
       } catch (error) {
         console.error('Failed to fetch video:', error);
         navigate('/not-found');
@@ -95,7 +99,6 @@ const VideoPlayer = () => {
     };
 
     loadVideo();
-    setHasLiked(false);
     setHasDisliked(false);
     setIsSubscribed(false);
     setHasSaved(false);
@@ -158,6 +161,16 @@ const VideoPlayer = () => {
     if (hasLiked) {
       setLikeCount(likeCount - 1);
       setHasLiked(false);
+      
+      // Remove from liked videos
+      if (video) {
+        removeFromLikedVideos(video.id);
+      }
+      
+      toast({
+        title: "Unliked",
+        description: "Video has been removed from your liked videos"
+      });
     } else {
       setLikeCount(likeCount + 1);
       setHasLiked(true);
@@ -165,6 +178,11 @@ const VideoPlayer = () => {
       if (hasDisliked) {
         setDislikeCount(dislikeCount - 1);
         setHasDisliked(false);
+      }
+      
+      // Add to liked videos
+      if (video) {
+        addToLikedVideos(video);
       }
       
       toast({
