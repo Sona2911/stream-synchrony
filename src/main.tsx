@@ -24,7 +24,8 @@ window.addEventListener('error', (event) => {
       src: (element as any).src || 'unknown',
       href: (element as any).href || 'unknown',
       id: element.id || 'no-id',
-      className: element.className || 'no-class'
+      className: element.className || 'no-class',
+      url: window.location.href
     });
   }
 }, true); // Capture phase to catch all errors
@@ -32,21 +33,25 @@ window.addEventListener('error', (event) => {
 // Also monitor for unhandled promise rejections
 window.addEventListener('unhandledrejection', (event) => {
   console.error('Unhandled Promise Rejection:', event.reason);
+  console.error('Current URL:', window.location.href);
 });
 
 // Wrap in try-catch to handle rendering errors
 try {
   console.log("Attempting to render application...");
+  console.log("Current URL:", window.location.href);
   root.render(<App />);
   console.log("Application rendered successfully");
 } catch (error) {
   console.error("Failed to render application:", error);
+  console.error("Current URL:", window.location.href);
   // Render a fallback UI for critical errors
   root.render(
     <div className="p-4 bg-red-50 text-red-800 rounded-md">
       <h1 className="text-xl font-bold mb-2">Application Error</h1>
       <p>We're sorry, but something went wrong. Please try refreshing the page.</p>
       <p className="mt-2 text-sm">Error details: {error instanceof Error ? error.message : 'Unknown error'}</p>
+      <p className="mt-2 text-sm">URL: {window.location.href}</p>
     </div>
   );
 }

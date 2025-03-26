@@ -8,8 +8,21 @@ const OpenInNewTab: React.FC = () => {
   const { toast } = useToast();
   
   const handleOpenInNewTab = () => {
-    const currentUrl = window.location.href;
-    window.open(currentUrl, '_blank');
+    // Get the base URL of the application
+    const baseUrl = window.location.origin;
+    // Get the current path
+    const path = window.location.pathname;
+    // Get the search params
+    const search = window.location.search;
+    
+    // Construct the full URL
+    const fullUrl = `${baseUrl}${path}${search}`;
+    
+    // Log the URL for debugging
+    console.log('Opening URL in new tab:', fullUrl);
+    
+    // Open in new tab
+    window.open(fullUrl, '_blank');
     
     toast({
       title: "Opening in new tab",
