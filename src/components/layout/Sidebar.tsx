@@ -98,7 +98,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, isLoggedIn }) => {
   return (
     <aside
       className={cn(
-        'fixed left-0 top-14 h-[calc(100vh-3.5rem)] transition-all duration-300 ease-in-out z-40 bg-white dark:bg-youtube-black border-r border-gray-200 dark:border-gray-800',
+        'top-14 h-[calc(100vh-3.5rem)] z-40 bg-white dark:bg-youtube-black border-r border-gray-200 dark:border-gray-800',
         isExpanded ? 'w-56' : 'w-16'
       )}
     >

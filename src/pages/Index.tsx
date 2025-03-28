@@ -33,7 +33,7 @@ const Index = () => {
 
   return (
     <div className="pb-6 animate-fade-in">
-      <div className="sticky top-14 z-10 bg-white dark:bg-youtube-black pt-3 pb-2 px-4 md:px-6 mb-4">
+      <div className="bg-white dark:bg-youtube-black pt-3 pb-2 px-4 md:px-6 mb-4">
         <CategoryPills
           categories={categories}
           selectedCategoryId={selectedCategory}
