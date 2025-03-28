@@ -76,7 +76,7 @@ const Navbar: React.FC<NavbarProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white dark:bg-youtube-black border-b border-gray-200 dark:border-gray-800 shadow-sm animate-fade-in">
+    <header className="w-full bg-white dark:bg-youtube-black border-b border-gray-200 dark:border-gray-800 shadow-sm animate-fade-in">
       <div className="flex items-center justify-between px-4 h-14">
         {/* Left section */}
         <div className="flex items-center gap-4">
